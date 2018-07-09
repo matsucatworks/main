@@ -37,55 +37,70 @@
 
     var scene = new THREE.Scene();
 
-    var camera = new THREE.PerspectiveCamera(30,width / height,1,10000);
+    var camera = new THREE.PerspectiveCamera(60,width / height,1,10000);
     camera.position.set(0, y, z);
 
-    var draw_meta = {};
-        var draw = function(){
+    var draw_meta = [],
+        pos = [];
+        pos[0] = [5,0,-5];
+        pos[1] = [3,3,2];
+        pos[2] = [-1,2,0];
+        pos[3] = [1,-2,-2];
+        pos[4] = [-10,-6,-4];
+        pos[5] = [-10,5,-5];
+    var draw = function(n){
+        var name = '_'+n,
+            rotation = (Math.random() * (50 - 1) + 1 | 0) / 10000,
+            rot_x = (Math.random() * 12 | 0) / 10,
+            rot_y = (Math.random() * 12 | 0) / 10,
+            rot_z = (Math.random() * 12 | 0) / 10,
+            x = (Math.random() * 10 | 0) - 5,
+            y = (Math.random() * 10 | 0) - 5,
+            z = (Math.random() * 10 | 0) - 5,
+            size = Math.random() * (3 - 1) + 1 | 0;
+
         var mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(3,3,3,10,10),
+            new THREE.BoxGeometry(size,size,size,8,8),
             new THREE.MeshPhongMaterial({color:0xf8b500,shininess:80})
         );
-        draw_meta.one = {};
-        draw_meta.one.rotation = 0.005;
-        mesh.name = 'one';
-        mesh.position.set(5,0,-5);
+        draw_meta[name] = {};
+        draw_meta[name].rotation = rotation;
+        mesh.rotation.x += rot_x;
+        mesh.rotation.y += rot_y;
+        mesh.rotation.z += rot_z;
+        mesh.name = name;
+        // mesh.position.set(x,y,z);
+        mesh.position.set(pos[n - 1][0],pos[n - 1][1],pos[n - 1][2]);
         scene.add(mesh);
+
+
+
     };
 
-    var draw2 = function(){
-        var mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(3,3,3),
-            new THREE.MeshPhongMaterial({color:0xf8b500,shininess:80})
-        );
-        draw_meta.two = {};
-        draw_meta.two.rotation = 0.008;
-        mesh.rotation.x += 0.1;
-        mesh.rotation.y += 0.05;
-        mesh.rotation.z += 0.5;
-        mesh.name = 'two';
-        mesh.position.set(0,0,0);
-        scene.add(mesh);
-    };
-    draw();
-    draw2();
+    var i = 0,
+        draw_cnt = 6;
+    while(i < draw_cnt){
+        draw(i + 1);
+        i = (i + 1)|0;
+    }
 
+
+    //ライト
     var light_1 = new THREE.DirectionalLight(0xffffff,1.4);
     var light_2 = new THREE.AmbientLight(0xffffff,0.4);
     light_1.position.set(0,100,100);
     scene.add(light_1);
     scene.add(light_2);
 
-
-
-
+    //OrbitControls
     var ctrl = new THREE.OrbitControls(camera,dom);
-    // ctrl.autoRotate = true;
     ctrl.enableZoom = false;
     ctrl.enablePan = false;
 
+    //背景色
     renderer.setClearColor(0xffffff, 1.0);
 
+    //毎秒描画
     var load = function(){
         scene.traverse(function(obj){
             if(obj instanceof THREE.Mesh === true){
@@ -95,17 +110,13 @@
             }
         });
 
-        // camera.position.y = 0;
-        // camera.position.z = z;
-
-
         ctrl.update();
         renderer.render(scene,camera);
         requestAnimationFrame(load);
     };
-
     load();
 
+    //カメラリセット
     var reset_obj ={};
     var reset = function(){
         reset_obj.id = requestAnimationFrame(reset);
